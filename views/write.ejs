@@ -17,21 +17,25 @@
     />
 
     <title>Hello, world!</title>
-    <link href="/public/main.css" rel="stylesheet" />
   </head>
   <body>
     <%- include('nav.html') %>
+    <h4 class="container mt-4"><strong>글 작성페이지</strong></h4>
 
     <div class="container mt-3">
-      <div class="card" style="width: 100%">
-        <div class="card-body">
-          <h5 class="card-title"><%= data.title %></h5>
-          <h6 class="card-subtitle mb-2 text-muted"><%= data.date %></h6>
-          <p class="card-text">임시내용입니다.</p>
-          <a href="#" class="card-link">수정하기</a>
+      <form action="/add" method="POST">
+        <div class="form-group">
+          <label>오늘의 할일</label>
+          <input type="text" class="form-control" name="title" />
         </div>
-      </div>
+        <div class="form-group">
+          <label>날짜</label>
+          <input type="text" class="form-control" name="date" />
+        </div>
+        <button type="submit" class="btn btn-outline-secondary">Submit</button>
+      </form>
     </div>
+
     <!-- Optional JavaScript; choose one of the two! -->
 
     <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
