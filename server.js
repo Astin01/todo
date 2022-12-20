@@ -84,7 +84,7 @@ app.delete("/delete", function (req, res) {
 
 app.get("/detail/:id", function (req, res) {
   let id = db
-    .collection("post")
+    .collection("post") 
     .findOne({ _id: parseInt(req.params.id) }, function (err, result) {
       if (err) {
         res.send("Sorry, we cannot find that!");
@@ -120,3 +120,51 @@ app.post(
     res.redirect("/");
   }
 );
+
+passport.use(
+  new LocalStrategy(
+    {
+      usernameField: "id",
+      passwordField: "pw",
+      session: true,
+      passReqToCallback: false,
+    },
+    function (putid, putpw, done) {
+      //console.log(입력한아이디, putpw);
+      db.collection("login").findOne({ id: putid }, function (err, result) {
+        if (err) return done(err);
+
+        if (!result)
+          return done(null, false, { message: "존재하지않는 아이디요" });
+        if (putpw == result.pw) {
+          return done(null, result);
+        } else {
+          return done(null, false, { message: "비번틀렸어요" });
+        }
+      });
+    }
+  )
+);
+
+app.get("/mypage", confirmLogIn, function (req, res) {
+  console.log(req.user);
+  res.render("mypage.ejs", { user: req.user });
+});
+
+app.get("/login", function (req, res) {
+  res.render("login.ejs");
+});
+
+function confirmLogIn(req, res, next) {
+  if (req.user) {
+    next();
+  } else {
+    res.send("로그인안하셨는데요?");
+  }
+}
+
+passport.deserializeUser(function (id, done) {
+  db.collection("login").findOne({ id: id }, function (err, result) {
+    done(null, result);
+  });
+});
