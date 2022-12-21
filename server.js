@@ -5,7 +5,8 @@ const MongoClient = require("mongodb").MongoClient;
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const session = require("express-session");
-
+const methodOverride = require("method-override");
+require("dotenv").config();
 app.use(
   session({ secret: "비밀코드", resave: true, saveUninitialized: false })
 );
@@ -15,11 +16,12 @@ app.use(passport.session());
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/public", express.static("public"));
-const methodOverride = require("method-override");
+
 app.use(methodOverride("_method"));
+
 var db;
 MongoClient.connect(
-  "mongodb+srv://wadmin:admin35168@cluster0.yhehzok.mongodb.net/?retryWrites=true&w=majority",
+  process.env.DB_URL,
   { useUnifiedTopology: true },
   function (err, client) {
     if (err) return console.log(err);
@@ -27,18 +29,55 @@ MongoClient.connect(
     db = client.db("todo");
 
     //서버띄우는 코드
-    app.listen("8080", function () {
+    app.listen(process.env.PORT, function () {
       console.log("listening on 8080");
     });
   }
 );
 
+app.get("/", function (req, res) {
+  res.render("index.ejs");
+});
+
 app.get("/write", function (req, res) {
   res.render("write.ejs");
 });
 
-app.get("/", function (req, res) {
-  res.render("index.ejs");
+app.get("/list", function (req, res) {
+  db.collection("post")
+    .find()
+    .toArray(function (err, result) {
+      res.render("list.ejs", { posts: result });
+    });
+});
+
+app.get("/detail/:id", function (req, res) {
+  let id = db
+    .collection("post")
+    .findOne({ _id: parseInt(req.params.id) }, function (err, result) {
+      if (err) {
+        res.send("Sorry, we cannot find that!");
+      } else res.render("detail.ejs", { data: result });
+    });
+});
+// id가 없을때 에러처리 해결필요
+
+app.get("/edit/:id", function (req, res) {
+  db.collection("post").findOne(
+    { _id: parseInt(req.params.id) },
+    function (err, result) {
+      res.render("edit.ejs", { post: result });
+    }
+  );
+});
+
+app.get("/mypage", confirmLogIn, function (req, res) {
+  console.log(req.user);
+  res.render("mypage.ejs", { user: req.user });
+});
+
+app.get("/login", function (req, res) {
+  res.render("login.ejs");
 });
 
 // app.get("/", function (req, res) {
@@ -67,39 +106,10 @@ app.post("/add", (req, res) => {
   });
 });
 
-app.get("/list", function (req, res) {
-  db.collection("post")
-    .find()
-    .toArray(function (err, result) {
-      console.log(result);
-      res.render("list.ejs", { posts: result });
-    });
-});
-
 app.delete("/delete", function (req, res) {
   req.body._id = parseInt(req.body._id);
   db.collection("post").deleteOne(req.body, function (err, result) {});
   res.send("삭제완료");
-});
-
-app.get("/detail/:id", function (req, res) {
-  let id = db
-    .collection("post") 
-    .findOne({ _id: parseInt(req.params.id) }, function (err, result) {
-      if (err) {
-        res.send("Sorry, we cannot find that!");
-      } else res.render("detail.ejs", { data: result });
-    });
-});
-// id가 없을때 에러처리 해결필요
-
-app.get("/edit/:id", function (req, res) {
-  db.collection("post").findOne(
-    { _id: parseInt(req.params.id) },
-    function (err, result) {
-      res.render("edit.ejs", { post: result });
-    }
-  );
 });
 
 app.put("/edit", function (req, res) {
@@ -107,7 +117,6 @@ app.put("/edit", function (req, res) {
     { _id: parseInt(req.body.id) },
     { $set: { title: req.body.title, date: req.body.date } },
     function () {
-      console.log("수정완료");
       res.redirect("/list");
     }
   );
@@ -146,15 +155,6 @@ passport.use(
   )
 );
 
-app.get("/mypage", confirmLogIn, function (req, res) {
-  console.log(req.user);
-  res.render("mypage.ejs", { user: req.user });
-});
-
-app.get("/login", function (req, res) {
-  res.render("login.ejs");
-});
-
 function confirmLogIn(req, res, next) {
   if (req.user) {
     next();
@@ -162,6 +162,10 @@ function confirmLogIn(req, res, next) {
     res.send("로그인안하셨는데요?");
   }
 }
+
+passport.serializeUser(function (user, done) {
+  done(null, user.id);
+});
 
 passport.deserializeUser(function (id, done) {
   db.collection("login").findOne({ id: id }, function (err, result) {
