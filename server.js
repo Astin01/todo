@@ -98,7 +98,7 @@ app.post("/add", (req, res) => {
             if (err) {
               return console.log(err);
             }
-            res.send("전송완료");
+            res.redirect("/write");
           }
         );
       }
