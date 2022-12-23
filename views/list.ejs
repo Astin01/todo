@@ -26,15 +26,18 @@
       integrity="sha384-Fy6S3B9q64WdZWQUiU+q4/2Lc9npb8tCaSX9FK7E8HnRr0Jz8D6OP9dO5Vg3Q9ct"
       crossorigin="anonymous"
     ></script>
-    <%- include('nav.html') %>
+    <%- include('nav.ejs') %>
     <!-- <% for (var i = 0; i < posts.length; i ++) {%>
     <h4><%= posts[i].title %></h4>
     <p><%= posts[i].date %></p>
     <% } %> -->
     <div class="container input-group mb-2">
-      <input class="form-control" />
-      <button class="input-group-append btn btn-danger">검색</button>
+      <input class="form-control" id="search-input" />
+      <button class="input-group-append btn btn-danger" id="search">
+        검색
+      </button>
     </div>
+
     <ul class="list-group">
       <% for (var i = 0; i < posts.length; i++){ %>
       <li class="list-group-item">
@@ -55,17 +58,6 @@
     <script>
       $(".edit").click(function (e) {
         window.location.href = `/edit/${e.target.dataset.id}`;
-        // $.ajax({
-        //   method: "GET",
-        //   url: "/edit",
-        //   data: { _id: e.target.dataset.id },
-        // })
-        //   .done((result) => {
-        //     // $(this).parent("li").fadeOut();
-        //   })
-        //   .fail(function (a, b, c) {
-        //     console.log(a, b, c);
-        //   });
       });
       $(".delete").click(function (e) {
         $.ajax({
@@ -79,6 +71,10 @@
           .fail(function (a, b, c) {
             console.log(a, b, c);
           });
+      });
+      $("#search").click(function () {
+        var input = $("#search-input").val();
+        window.location.replace("/search?value=" + input);
       });
     </script>
   </body>

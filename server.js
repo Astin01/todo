@@ -80,6 +80,27 @@ app.get("/login", function (req, res) {
   res.render("login.ejs");
 });
 
+app.get("/search", (req, res) => {
+  var searchpar = [
+    {
+      $search: {
+        index: "titleSearch",
+        text: {
+          query: req.query.value,
+          path: "title", // 제목날짜 둘다 찾고 싶으면 ['제목', '날짜']
+        },
+      },
+    },
+  ];
+  console.log(req.query);
+  db.collection("post")
+    .aggregate(searchpar)
+    .toArray((err, result) => {
+      console.log(result);
+      res.render("search.ejs", { posts: result });
+    });
+});
+
 // app.get("/", function (req, res) {
 //   res.sendFile(__dirname + "/index.html");
 // });

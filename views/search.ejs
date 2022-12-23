@@ -20,11 +20,17 @@
     <link rel="stylesheet" href="../public/main.css" />
   </head>
   <body>
-    <%- include('nav.html') %>
+    <%- include('nav.ejs') %>
     <!-- <% for (var i = 0; i < posts.length; i ++) {%>
     <h4><%= posts[i].title %></h4>
     <p><%= posts[i].date %></p>
     <% } %> -->
+    <div class="container input-group mb-2">
+      <input class="form-control" id="search-input" />
+      <button class="input-group-append btn btn-danger" id="search">
+        검색
+      </button>
+    </div>
     <ul class="list-group">
       <% for (var i = 0; i < posts.length; i++){ %>
       <li class="list-group-item">
